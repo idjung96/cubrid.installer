@@ -9,6 +9,7 @@ This role supports the follows.
  - check if the cluster works
 
 It is recommended to use this playbook with the [CUBRID Conf generator](https://github.com/idjung96/CUBRID_conf_generator). 
+
 Demonstration: ([Youtube link](https://youtu.be/NWvkxOe3CLk), Korean subtitles)
 
 Please read how to use CUBRID conf generator & this playbook.

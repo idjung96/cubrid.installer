@@ -8,8 +8,8 @@ This role supports the follows.
  - start CUBRID HA Cluster
  - check if the cluster works
 
-It is recommended to use this playbook with the [CUBRID Conf generator(https://github.com/idjung96/CUBRID_conf_generator)]. 
-Demonstration: ([Youtube link(https://youtu.be/NWvkxOe3CLk)], Korean subtitles)
+It is recommended to use this playbook with the [CUBRID Conf generator](https://github.com/idjung96/CUBRID_conf_generator). 
+Demonstration: ([Youtube link](https://youtu.be/NWvkxOe3CLk), Korean subtitles)
 
 Please read how to use CUBRID conf generator & this playbook.
 
@@ -33,7 +33,7 @@ Role
 - singleplatform-eng.users
 
 Project
-- [CUBRID Conf generator(https://github.com/idjung96/CUBRID_conf_generator)]
+- [CUBRID Conf generator](https://github.com/idjung96/CUBRID_conf_generator)
 
 Example Playbook
 ----------------

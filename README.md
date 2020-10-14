@@ -1,38 +1,72 @@
-Role Name
+CUBRID.Installer
 =========
 
-A brief description of the role goes here.
+This role is for building a CUBRID High Availability (HA) cluster.
+This role supports the follows.
+ - Build environments on the servers belong to CUBRID HA cluster
+ - Copy the configuration file created by CUBRID conf generator to all servers
+ - start CUBRID HA Cluster
+ - check if the cluster works
+
+It is recommended to use this playbook with the [CUBRID Conf generator](https://github.com/idjung96/CUBRID_conf_generator). 
+
+Demonstration: ([Youtube link](https://youtu.be/NWvkxOe3CLk), Korean subtitles)
+
+Please read how to use CUBRID conf generator & this playbook.
 
 Requirements
 ------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+- CENTOS 7 or higher
+- CUBRID conf generator
 
 Role Variables
 --------------
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Group vars
+  - cubrid_account: CUBRID operator account
+  - config_dir: directories of CUBRID conf files
+  - cubrid_ver: CUBRID version to install
+  - db_name: database name
+  - create_db: whether to create databases
 
 Dependencies
 ------------
+Role
+- singleplatform-eng.users
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Project
+- [CUBRID Conf generator](https://github.com/idjung96/CUBRID_conf_generator)
 
 Example Playbook
 ----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```
+$ vi play.yml
+- hosts: all
+  name: cubrid installer
+  vars:
+# modifiable start --------------------------
+    cubrid_account: "cubrid1"
+    config_dir: "/root/.ansible"
+    cubrid_ver: "10.2"
+    db_name: basic
+    create_db: true
+# modifiable end ---------------------------
+    cubrid_platform: "x86_64"
+    groups_to_create:
+      - name: "cubrid"
+        gid: "10000"
+    users:
+      - username: "{{ cubrid_account }}"
+        name: "{{ cubrid_account }}"
+        group: 'cubrid'
+  roles:
+    - singleplatform-eng.users
+    - idjung96.cubrid_installer
+```
 
 License
 -------
-
 BSD
 
 Author Information
 ------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+idjung@naver.com

@@ -20,15 +20,15 @@
           export LIBPATH
           export PATH
 
-- name: "stat cubrid installed"
+- name: "check if cubrid installed"
   stat: path=/home/{{ cubrid_account }}/CUBRID
   register: cubrid_stat
 
-- name: "stat cubrid binary"
+- name: "check cubrid binary"
   stat: path=/home/{{ cubrid_account }}/{{ cubrid_file }}
   register: bin_stat
 
-- name: "stat db file"
+- name: "check db file"
   stat: path=/home/{{ cubrid_account }}/DB
   register: db_stat
 
@@ -125,7 +125,7 @@
 - name: "copy cubrid/conf file"
   become: yes
   become_user: "{{ cubrid_account }}"
-  copy: 
+  copy:
     src: "/home/{{ cubrid_account }}/conf/{{ item }}"
     dest: "/home/{{ cubrid_account }}/CUBRID/conf/"
     remote_src: yes
@@ -138,24 +138,19 @@
     - "wasip.txt"
     - "pcip.txt"
 
-- name: "check /etc/hosts"
+- name: "check cubrid.conf"
   become: yes
   become_user: "{{ cubrid_account }}"
-  shell: "head -n 1 /home/{{ cubrid_account }}/conf/hosts|awk '{print $2;}'|grep -f /dev/stdin /etc/hosts"
-  register: check_etc
+  shell: "grep 'ha_mode=off' /home/{{ cubrid_account }}/CUBRID/conf/cubrid.conf"
+  register: check_cubrid_conf
   ignore_errors: true
 
-- name: "output check_etc"
-  debug:
-    var: "{{ check_etc.stdout_lines }}"
-
 - name: "modify /etc/hosts"
-  shell: cat /home/{{ cubrid_account }}/conf/hosts >> /etc/hosts
-  when: check_etc is failed
+  shell: cp /home/{{ cubrid_account }}/conf/hosts /etc/hosts
 
 - name: "add firewalld policy"
   include: "{{ playbook_dir }}/files/{{ inventory_hostname }}/firewalld-control.yml"
-  
+
 #- name: "cubrid broker start"
 #  become: yes
 #  become_user: "{{ cubrid_account }}"
@@ -184,6 +179,13 @@
   become: yes
   become_user: "{{ cubrid_account }}"
   shell: "source ~/.bashrc;nohup cubrid heartbeat start"
+  when: check_cubrid_conf is failed
+
+- name: "cubrid server start"
+  become: yes
+  become_user: "{{ cubrid_account }}"
+  shell: "source ~/.bashrc;nohup cubrid server start {{ db_name }}"
+  when: check_cubrid_conf is not failed
 
 - name: "find_active_database"
   become: yes
@@ -196,6 +198,9 @@
 #  debug:
 #    var: "{{ db_mode.stdout_lines }}"
 
+- name: "wait before testing cluster status"
+  pause: seconds={{ time_to_wait }}
+
 - name: "create test table"
   become: yes
   become_user: "{{ cubrid_account }}"
@@ -207,7 +212,7 @@
   become_user: "{{ cubrid_account }}"
   shell: "source ~/.bashrc;csql -c 'SELECT count(*) FROM t;' {{ db_name }}@localhost|grep '0 row selected'"
   register: first_cnt
-  when: db_mode is failed
+  when: db_mode is failed and check_cubrid_conf is failed
   ignore_errors: true
 
 - name: "insert test data"
@@ -221,7 +226,7 @@
   become_user: "{{ cubrid_account }}"
   shell: "source ~/.bashrc;csql -c 'SELECT count(*) FROM t;' {{ db_name }}@localhost|grep '1 row selected'"
   register: second_cnt
-  when: db_mode is failed
+  when: db_mode is failed and check_cubrid_conf is failed
 
 - name: "check ha status"
   debug:

@@ -65,7 +65,7 @@ $ vi play.yml
 
 License
 -------
-BSD
+GPL v3
 
 Author Information
 ------------------
